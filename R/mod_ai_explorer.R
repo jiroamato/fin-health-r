@@ -111,17 +111,33 @@ You are a financial data analyst assistant. Follow these rules strictly:
    "Free Cash Flow per Share", "Return on Tangible Equity",
    "Number of Employees", "Gross Profit", "Net Income".
 
-3. Structure every response in this format:
-   - **Filters applied:** list the filters used (or "None" if showing all data)
-   - **Key stats:** 2-3 notable numbers from the query result
-   - **Insight:** one sentence interpreting the result
-   - **Try next:** one clickable follow-up suggestion as
-     `<span class="suggestion">suggestion text</span>`
+3. **Response format - choose ONE based on the question type:**
+
+   **TYPE A - Data queries** (user says "show", "filter", "rank", "list",
+   "compare", "top N", "which companies have..."):
+   Use the four-bullet markdown format, each on its own line:
+   - **Filters applied:** ...
+   - **Key stats:** ...
+   - **Insight:** ...
+   - **Try next:** `<span class="suggestion">...</span>`
+
+   **TYPE B - Explanation / interpretation questions** (user asks "what does X
+   mean?", "is Y concerning?", "explain", "what is a healthy range?",
+   "why does Z have..."):
+   Do NOT use the bullet format. Write natural prose paragraphs instead.
+   Cite definitions, formulas, healthy ranges, and industry-specific benchmarks
+   from the domain context. Compare values against the relevant sector average
+   and explain *why* different industries have different norms. End with one
+   clickable suggestion: `<span class="suggestion">...</span>`
+
+   **TYPE C - Mixed** (data + explanation in one question):
+   Answer ALL parts. Use bullets for the data part and separate prose
+   paragraphs for the explanation part.
 
 4. When the user asks about a sector, use the Category column (e.g., IT, BANK).
    When they mention a company name, map it to the ticker in the Company column.
 
-5. Keep responses concise - no more than 5 sentences outside the structured format.
+5. Keep responses concise - no more than 5 sentences per section.
 
 6. **Never include raw HTML, SQL code blocks, or `<button>` markup in your
    response text.** Do not echo the SQL query or the button element back to the
@@ -132,9 +148,23 @@ has_token <- function() {
   nzchar(Sys.getenv("GITHUB_TOKEN", ""))
 }
 
-ai_explorer_ui <- function(id) {
-  ns <- NS(id)
+# Create QueryChat R6 instance at source time (like Python version)
+qc_instance <- NULL
+get_qc <- function() {
+  if (is.null(qc_instance)) {
+    qc_instance <<- querychat::QueryChat$new(
+      df,
+      table_name = "financial_data",
+      data_description = DATA_DESCRIPTION,
+      extra_instructions = EXTRA_INSTRUCTIONS,
+      greeting = GREETING,
+      client = ellmer::chat_github(model = "gpt-4.1-mini")
+    )
+  }
+  qc_instance
+}
 
+ai_explorer_ui <- function() {
   if (!has_token()) {
     return(
       div(
@@ -147,22 +177,18 @@ ai_explorer_ui <- function(id) {
     )
   }
 
-  sidebar_content <- sidebar(
-    querychat::querychat_ui(ns("qc")),
-    open = "desktop",
-    width = 400
-  )
+  qc <- get_qc()
 
   data_card <- card(
     card_header(
       div(
         div(
-          textOutput(ns("ai_title"), inline = TRUE),
+          textOutput("ai_title", inline = TRUE),
           span(" | "),
-          textOutput(ns("ai_row_count"), inline = TRUE)
+          textOutput("ai_row_count", inline = TRUE)
         ),
         downloadButton(
-          ns("ai_download"),
+          "ai_download",
           span(
             HTML(
               '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
@@ -181,132 +207,119 @@ ai_explorer_ui <- function(id) {
         class = "d-flex justify-content-between align-items-center w-100"
       )
     ),
-    DTOutput(ns("ai_data_table")),
+    DTOutput("ai_data_table"),
     full_screen = TRUE
   )
 
   chart_row <- layout_columns(
     card(
       card_header("Sector Profitability"),
-      plotlyOutput(ns("ai_chart_a")),
+      plotlyOutput("ai_chart_a"),
       full_screen = TRUE
     ),
     card(
       card_header("Metric Trend"),
-      plotlyOutput(ns("ai_chart_b")),
+      plotlyOutput("ai_chart_b"),
       full_screen = TRUE
     ),
     col_widths = c(6, 6)
   )
 
   layout_sidebar(
-    sidebar = sidebar_content,
+    sidebar = qc$sidebar(open = "desktop", width = 400),
     h2("fin-chat"),
     data_card,
     chart_row
   )
 }
 
-ai_explorer_server <- function(id) {
-  moduleServer(id, function(input, output, session) {
-    ns <- session$ns
+ai_explorer_server <- function(input, output, session) {
+  if (!has_token()) return()
 
-    if (!has_token()) return()
+  qc <- get_qc()
+  qc_vals <- qc$server()
 
-    qc <- querychat::querychat_server(
-      "qc",
-      df,
-      table_name = "financial_data",
-      data_description = DATA_DESCRIPTION,
-      extra_instructions = EXTRA_INSTRUCTIONS,
-      greeting = GREETING,
-      create_chat_client = function() {
-        ellmer::chat_github(model = "gpt-4.1-mini")
-      }
+  output$ai_title <- renderText({
+    title <- qc_vals$title()
+    if (is.null(title) || title == "") "Filtered Data" else title
+  })
+
+  output$ai_row_count <- renderText({
+    filtered <- qc_vals$df()
+    paste(nrow(filtered), "rows")
+  })
+
+  output$ai_data_table <- renderDT({
+    filtered <- qc_vals$df()
+    datatable(
+      head(filtered, 10),
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE,
+        dom = "t"
+      ),
+      rownames = FALSE
     )
+  })
 
-    output$ai_title <- renderText({
-      title <- qc$title()
-      if (is.null(title) || title == "") "Filtered Data" else title
-    })
-
-    output$ai_row_count <- renderText({
-      filtered <- qc$df()
-      paste(nrow(filtered), "rows")
-    })
-
-    output$ai_data_table <- renderDT({
-      filtered <- qc$df()
-      datatable(
-        head(filtered, 10),
-        options = list(
-          pageLength = 10,
-          scrollX = TRUE,
-          dom = "t"
-        ),
-        rownames = FALSE
-      )
-    })
-
-    output$ai_download <- downloadHandler(
-      filename = function() "filtered_financial_data.csv",
-      content = function(file) {
-        write.csv(qc$df(), file, row.names = FALSE)
-      }
-    )
-
-    # Helper to determine data shape
-    data_shape <- function(filtered) {
-      list(
-        n_companies = length(unique(filtered$Company)),
-        n_sectors = length(unique(filtered$Category)),
-        n_years = length(unique(filtered$Year))
-      )
+  output$ai_download <- downloadHandler(
+    filename = function() "filtered_financial_data.csv",
+    content = function(file) {
+      write.csv(qc_vals$df(), file, row.names = FALSE)
     }
+  )
 
-    output$ai_chart_a <- renderPlotly({
-      filtered <- qc$df()
-      metric <- infer_metric(qc$title())
-      unit <- METRIC_CHOICES[metric]
-      if (nrow(filtered) == 0) return(ggplotly(empty_chart()))
+  # Helper to determine data shape
+  data_shape <- function(filtered) {
+    list(
+      n_companies = length(unique(filtered$Company)),
+      n_sectors = length(unique(filtered$Category)),
+      n_years = length(unique(filtered$Year))
+    )
+  }
 
-      shape <- data_shape(filtered)
-      p <- if (shape$n_companies == 1) {
-        build_single_company_summary(filtered, metric, unit)
-      } else if (shape$n_sectors == 1 || shape$n_years == 1) {
-        build_company_comparison_bar(filtered, metric, unit)
-      } else {
-        build_sector_bar(filtered, metric, unit)
-      }
-      ggplotly(p) %>%
-        config(displayModeBar = FALSE) %>%
-        layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
-    })
+  output$ai_chart_a <- renderPlotly({
+    filtered <- qc_vals$df()
+    metric <- infer_metric(qc_vals$title())
+    unit <- METRIC_CHOICES[metric]
+    if (nrow(filtered) == 0) return(ggplotly(empty_chart()))
 
-    output$ai_chart_b <- renderPlotly({
-      filtered <- qc$df()
-      metric <- infer_metric(qc$title())
-      unit <- METRIC_CHOICES[metric]
-      if (nrow(filtered) == 0) return(ggplotly(empty_chart()))
+    shape <- data_shape(filtered)
+    p <- if (shape$n_companies == 1) {
+      build_single_company_summary(filtered, metric, unit)
+    } else if (shape$n_sectors == 1 || shape$n_years == 1) {
+      build_company_comparison_bar(filtered, metric, unit)
+    } else {
+      build_sector_bar(filtered, metric, unit)
+    }
+    ggplotly(p) %>%
+      config(displayModeBar = FALSE) %>%
+      layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
+  })
 
-      shape <- data_shape(filtered)
-      p <- if (shape$n_companies == 1) {
-        company <- filtered$Company[1]
-        if (shape$n_years > 1) {
-          build_company_trend(filtered, metric, unit)
-        } else {
-          build_cash_flows(filtered, company)
-        }
-      } else if (shape$n_years == 1) {
-        build_peer_scatter(filtered, metric, unit)
-      } else if (shape$n_companies <= 5) {
+  output$ai_chart_b <- renderPlotly({
+    filtered <- qc_vals$df()
+    metric <- infer_metric(qc_vals$title())
+    unit <- METRIC_CHOICES[metric]
+    if (nrow(filtered) == 0) return(ggplotly(empty_chart()))
+
+    shape <- data_shape(filtered)
+    p <- if (shape$n_companies == 1) {
+      company <- filtered$Company[1]
+      if (shape$n_years > 1) {
         build_company_trend(filtered, metric, unit)
       } else {
-        build_metric_trend(filtered, metric, unit)
+        build_cash_flows(filtered, company)
       }
-      ggplotly(p) %>%
-        config(displayModeBar = FALSE) %>%
-        layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
-    })
+    } else if (shape$n_years == 1) {
+      build_peer_scatter(filtered, metric, unit)
+    } else if (shape$n_companies <= 5) {
+      build_company_trend(filtered, metric, unit)
+    } else {
+      build_metric_trend(filtered, metric, unit)
+    }
+    ggplotly(p) %>%
+      config(displayModeBar = FALSE) %>%
+      layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
   })
 }

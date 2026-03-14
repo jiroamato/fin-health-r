@@ -22,7 +22,7 @@ ui <- page_navbar(
   header = css_tag,
   nav_panel("Sector Analysis", sector_ui("sector")),
   nav_panel("Company Health", company_ui("company")),
-  nav_panel("fin-chat", ai_explorer_ui("ai")),
+  nav_panel("fin-chat", ai_explorer_ui()),
   footer = tags$footer(
     tags$div(
       tags$p(
@@ -39,7 +39,7 @@ ui <- page_navbar(
 server <- function(input, output, session) {
   sector_server("sector")
   company_server("company")
-  ai_explorer_server("ai")
+  ai_explorer_server(input, output, session)
 }
 
 shinyApp(ui, server)
