@@ -217,3 +217,10 @@ _site/
 # Coverage files from pytest
 .coverage
 coverage.xml
+
+# R artifacts
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+rsconnect/
