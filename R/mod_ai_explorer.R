@@ -4,6 +4,7 @@ library(shiny)
 library(bslib)
 library(plotly)
 library(DT)
+library(duckdb)
 
 DEFAULT_METRIC <- "Net Profit Margin"
 
