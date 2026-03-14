@@ -829,10 +829,10 @@
         "GithubRef": "HEAD",
         "GithubSHA1": "93d5b30f6e4f3a4d74de5b5283f2c3794512a9b1",
         "NeedsCompilation": "no",
-        "Packaged": "2026-03-14 05:05:29 UTC; amato",
+        "Packaged": "2026-03-14 06:25:13 UTC; amato",
         "Author": "Hadley Wickham [aut, cre] (ORCID:\n    <https://orcid.org/0000-0003-4757-117X>),\n  Joe Cheng [aut],\n  Aaron Jacobs [aut],\n  Garrick Aden-Buie [aut] (ORCID:\n    <https://orcid.org/0000-0002-7111-0077>),\n  Barret Schloerke [aut] (ORCID: <https://orcid.org/0000-0001-9986-114X>),\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
         "Maintainer": "Hadley Wickham <hadley@posit.co>",
-        "Built": "R 4.5.1; ; 2026-03-14 05:05:32 UTC; windows"
+        "Built": "R 4.5.1; ; 2026-03-14 06:25:14 UTC; windows"
       }
     },
     "evaluate": {
@@ -3103,7 +3103,7 @@
       "checksum": "72fcee8bdcd4d7282ea68c661417f30d"
     },
     ".Rprofile": {
-      "checksum": "f468b9388d8c4f478481f2144e744297"
+      "checksum": "0fa32899d7c7247fad5ae366efd01325"
     },
     "app.R": {
       "checksum": "92f3bfbe8a12bbf3d1023e81728c534b"
