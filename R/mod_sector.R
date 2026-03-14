@@ -19,9 +19,13 @@ sector_ui <- function(id) {
     ),
     selectizeInput(
       ns("sector"), "Sector",
-      choices = c("All", ALL_SECTORS),
-      selected = "All",
-      multiple = TRUE
+      choices = ALL_SECTORS,
+      selected = NULL,
+      multiple = TRUE,
+      options = list(
+        plugins = list("remove_button"),
+        placeholder = "All sectors"
+      )
     ),
     selectizeInput(
       ns("metric"), "Metric",
@@ -114,7 +118,7 @@ sector_server <- function(id) {
       updateSliderInput(session, "year_range",
         value = c(min(df$Year), max(df$Year))
       )
-      updateSelectizeInput(session, "sector", selected = "All")
+      updateSelectizeInput(session, "sector", selected = character(0))
       updateSelectizeInput(session, "metric", selected = "Net Profit Margin")
     })
 
@@ -124,7 +128,7 @@ sector_server <- function(id) {
       sectors <- input$sector
       filtered <- df %>%
         filter(Year >= yr[1], Year <= yr[2])
-      if (!is.null(sectors) && !("All" %in% sectors)) {
+      if (length(sectors) > 0) {
         filtered <- filtered %>% filter(Category %in% sectors)
       }
       filtered
