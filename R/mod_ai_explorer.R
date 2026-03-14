@@ -5,6 +5,7 @@ library(bslib)
 library(plotly)
 library(DT)
 library(RSQLite)
+library(gitcreds)
 
 DEFAULT_METRIC <- "Net Profit Margin"
 
