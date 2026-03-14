@@ -3,8 +3,13 @@
 library(shiny)
 library(bslib)
 
-# Source modules
+# Source all R modules
 source("R/data.R")
+source("R/charts.R")
+source("R/helpers.R")
+source("R/mod_sector.R")
+source("R/mod_company.R")
+source("R/mod_ai_explorer.R")
 
 # Custom CSS
 css_tag <- tags$link(rel = "stylesheet", href = "custom_styles.css")
@@ -15,9 +20,9 @@ ui <- page_navbar(
   id = "main_nav",
   fillable = TRUE,
   header = css_tag,
-  nav_panel("Sector Analysis", h3("Sector Analysis — coming soon")),
-  nav_panel("Company Health", h3("Company Health — coming soon")),
-  nav_panel("fin-chat", h3("fin-chat — coming soon")),
+  nav_panel("Sector Analysis", sector_ui("sector")),
+  nav_panel("Company Health", company_ui("company")),
+  nav_panel("fin-chat", ai_explorer_ui("ai")),
   footer = tags$footer(
     tags$div(
       tags$p(
@@ -32,7 +37,9 @@ ui <- page_navbar(
 )
 
 server <- function(input, output, session) {
-  # Module servers will be added here
+  sector_server("sector")
+  company_server("company")
+  ai_explorer_server("ai")
 }
 
 shinyApp(ui, server)
