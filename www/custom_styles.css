@@ -320,7 +320,7 @@ select:focus {
     gap: 0.85rem;
 }
 
-/* Page 1: sidebar layout main panel — override bslib's 1.5rem gap */
+/* Sidebar layout main panel — override bslib's 1.5rem gap */
 .bslib-sidebar-layout > .main.bslib-gap-spacing {
     gap: clamp(0.4rem, 1vh, 0.85rem) !important;
     padding: clamp(0.4rem, 0.8vh, 0.75rem) clamp(0.5rem, 1vw, 1rem);
@@ -346,7 +346,7 @@ textarea,
     border: none !important;
 }
 
-/* ── Sidebar collapse-toggle button ── */
+/* Sidebar collapse-toggle button */
 .bslib-sidebar-layout > .collapse-toggle {
     background-color: white;
     border: 1px solid var(--slate-200);
@@ -522,16 +522,13 @@ body > .container-fluid {
     flex-direction: column;
 }
 
-/* Chart/widget containers fill available space */
-.card .jupyter-widgets,
-.card .widget-subarea,
+/* Plotly chart containers fill available space */
+.card .plotly,
+.card .js-plotly-plot,
+.card .plotly.html-widget,
 .card .shiny-report-size {
     flex: 1 1 0;
     min-height: 0;
-}
-
-/* Altair vega-embed fills its container */
-.card .vega-embed {
     width: 100%;
     height: 100%;
 }
@@ -574,8 +571,7 @@ body > .container-fluid {
 }
 
 /* fin-chat: data card — compact, no grow */
-.page-fillable > .card[style*="auto"] ,
-.page-fillable > .card:has(.shiny-data-grid) {
+.page-fillable > .card:has(.dataTable) {
     flex: 0 0 auto;
     max-height: 45vh;
     overflow: hidden;

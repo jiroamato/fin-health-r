@@ -2,9 +2,9 @@
 
 ## Documentation
 
-Copyright (c) 2026 Seungmyun Park, Shruti Sasi, Jiro Amato, Luke Ni
+Copyright (c) 2026 Jiro Amato
 
-Documentation in the `reports/` and `notebooks/` directory and all the other documentation in this project is made available under the **Attribution 4.0 International** ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)).
+Documentation in this project is made available under the **Attribution 4.0 International** ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)).
 
 This is a human-readable summary of (and not a substitute for) the [license](https://creativecommons.org/licenses/by/4.0/legalcode).
 
@@ -17,7 +17,7 @@ The licensor cannot revoke these freedoms as long as you follow the license term
 
 ### Under the following terms:
 
-- **Attribution** — You must give appropriate credit (mentioning that your work is derived from work that is Copyright © Jingbo Wang, Jennifer Onyebuchi, Shanzé Khemani, Jiro Amato), provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+- **Attribution** — You must give appropriate credit (mentioning that your work is derived from work that is Copyright (c) Jiro Amato), provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
 
 **No additional restrictions** — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
 
@@ -33,7 +33,7 @@ No warranties are given. The license may not give you all of the permissions nec
 
 MIT License
 
-Copyright (c) 2026 Seungmyun Park, Shruti Sasi, Jiro Amato, Luke Ni
+Copyright (c) 2026 Jiro Amato
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
